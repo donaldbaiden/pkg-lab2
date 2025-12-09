@@ -24,13 +24,9 @@ default_dir = st.session_state.get("last_dir", str(Path.home()))
 
 with st.form("scanner"):
 	directory = st.text_input("Путь к папке", default_dir, help="Можно указать абсолютный или относительный путь.")
-	col_a, col_b = st.columns(2)
-	with col_a:
-		recursive = st.checkbox("Сканировать вложенные папки", value=True)
-	with col_b:
-		limit = st.number_input(
-			"Лимит обрабатываемых файлов", min_value=1, max_value=MAX_FILES, value=MAX_FILES, step=1000
-		)
+	limit = st.number_input(
+		"Лимит обрабатываемых файлов", min_value=1, max_value=MAX_FILES, value=MAX_FILES, step=1000
+	)
 	submitted = st.form_submit_button("Сканировать")
 
 results: List[ImageInfo] | None = None
@@ -39,7 +35,7 @@ if submitted:
 	st.session_state.last_dir = directory
 	try:
 		with st.spinner("Чтение метаданных..."):
-			results = scan_directory(directory, recursive=recursive, limit=int(limit))
+			results = scan_directory(directory, limit=int(limit))
 	except FileNotFoundError:
 		st.error("Папка не найдена. Проверьте путь и права доступа.")
 	except NotADirectoryError:

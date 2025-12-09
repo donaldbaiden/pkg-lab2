@@ -71,9 +71,7 @@ class ImageInfo:
 		}
 
 
-def scan_directory(
-	directory: str, recursive: bool = True, limit: Optional[int] = None
-) -> List[ImageInfo]:
+def scan_directory(directory: str, limit: Optional[int] = None) -> List[ImageInfo]:
 	root = Path(directory).expanduser()
 	if not root.exists():
 		raise FileNotFoundError(directory)
@@ -83,7 +81,7 @@ def scan_directory(
 	target_limit = min(limit or MAX_FILES, MAX_FILES)
 	result: List[ImageInfo] = []
 
-	for path in _iter_supported_files(root, recursive):
+	for path in _iter_supported_files(root):
 		info = _read_image_info(path)
 		if info:
 			result.append(info)
@@ -93,23 +91,16 @@ def scan_directory(
 	return result
 
 
-def _iter_supported_files(root: Path, recursive: bool) -> Iterator[Path]:
-	stack = [root]
-	while stack:
-		current = stack.pop()
-		try:
-			with os.scandir(current) as it:
-				for entry in it:
-					if entry.is_symlink():
-						continue
-					if entry.is_dir(follow_symlinks=False) and recursive:
-						stack.append(Path(entry.path))
-					elif entry.is_file(follow_symlinks=False):
-						ext = Path(entry.name).suffix.lower()
-						if ext in SUPPORTED_EXTENSIONS:
-							yield Path(entry.path)
-		except PermissionError:
-			continue
+def _iter_supported_files(root: Path) -> Iterator[Path]:
+	try:
+		with os.scandir(root) as it:
+			for entry in it:
+				if entry.is_file(follow_symlinks=False):
+					ext = Path(entry.name).suffix.lower()
+					if ext in SUPPORTED_EXTENSIONS:
+						yield Path(entry.path)
+	except PermissionError:
+		return
 
 
 def _read_image_info(path: Path) -> Optional[ImageInfo]:
