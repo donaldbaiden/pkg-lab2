@@ -137,9 +137,9 @@ def _extract_dpi(img: Image.Image) -> Tuple[Optional[float], Optional[float]]:
 	if "jfif_density" in info:
 		x, y = info["jfif_density"]
 		unit = info.get("jfif_unit", 0)
-		if unit == 1:  # dots per inch
+		if unit == 1:  
 			return float(x), float(y)
-		if unit == 2:  # dots per cm
+		if unit == 2: 
 			return float(x) * 2.54, float(y) * 2.54
 
 	if "resolution" in info:
